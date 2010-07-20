@@ -1,0 +1,22 @@
+---
+abstract: 'Simple, hierarchical user authorization for web applications, with optional support for plan-based paid services.'
+author:
+  - 'Ido Perlmuter <ido@ido50.net>'
+build_requires:
+  Test::More: 0
+configure_requires:
+  ExtUtils::MakeMaker: 6.31
+dynamic_config: 0
+generated_by: 'Dist::Zilla version 4.101740, CPAN::Meta::Converter version 2.101670'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Abilities
+requires:
+  Moose::Role: 0
+  namespace::autoclean: 0
+resources:
+  homepage: http://github.com/ido50/Abilities/tree
+  repository: git://github.com/ido50/Abilities.git
+version: 0.1
