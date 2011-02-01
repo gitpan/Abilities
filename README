@@ -3,7 +3,7 @@ NAME
     applications, with optional support for plan-based paid services.
 
 VERSION
-    version 0.1
+    version 0.2
 
 SYNOPSIS
             package User;
@@ -103,7 +103,7 @@ REQUIRED METHODS
     If a user/role object has a true value for this attribute, then they
     will be able to perform any action, even if it wasn't granted to them.
 
-METHODS
+PROVIDED METHODS
     Classes that consume this role will have the following methods available
     for them:
 

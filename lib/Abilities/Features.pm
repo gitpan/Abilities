@@ -1,6 +1,6 @@
 package Abilities::Features;
 BEGIN {
-  $Abilities::Features::VERSION = '0.1';
+  $Abilities::Features::VERSION = '0.2';
 }
 
 use Moose::Role;
@@ -14,7 +14,7 @@ Abilities::Features - Extends Abilities with plan management for subscription-ba
 
 =head1 VERSION
 
-version 0.1
+version 0.2
 
 =head1 SYNOPSIS
 
