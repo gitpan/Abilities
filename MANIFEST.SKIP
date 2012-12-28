@@ -13,3 +13,6 @@
 ^cover_db$
 ^pod2htm.*\.tmp$
 ^Abilities-.*$
+^\.build.+$
+^MYMETA\.yml$
+^MYMETA\.json$

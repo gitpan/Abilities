@@ -1,20 +1,23 @@
 package Abilities;
-BEGIN {
-  $Abilities::VERSION = '0.2';
-}
 
-use Moose::Role;
+use Any::Moose 'Role';
 use namespace::autoclean;
 
-# ABSTRACT: Simple, hierarchical user authorization for web applications, with optional support for plan-based paid services.
+use Carp;
+use Hash::Merge qw/merge/;
+
+our $VERSION = "0.3";
+$VERSION = eval $VERSION;
+
+# ABSTRACT: Simple, hierarchical user authorization for web applications, with optional support for plan-based (paid) services.
 
 =head1 NAME
 
-Abilities - Simple, hierarchical user authorization for web applications, with optional support for plan-based paid services.
+Abilities - Simple, hierarchical user authorization for web applications, with optional support for plan-based (paid) services.
 
 =head1 VERSION
 
-version 0.2
+version 0.3
 
 =head1 SYNOPSIS
 
@@ -34,21 +37,21 @@ version 0.2
 	if ($user->can_perform('something')) {
 		do_something();
 	} else {
-		die "Hey you can't do that, you can only do ", join(', ', $user->abilities);
+		die "Hey you can't do that, you can only do " . join(', ', keys %{$user->abilities});
 	}
 
 =head1 DESCRIPTION
 
 Abilities is a simple yet powerful mechanism for authorizing users of web
-applications to perform certain actions in the app's code. This is an
+applications (or any applications) to perform certain actions in the application. This is an
 extension of the familiar role-based access control that is common in
 various systems and frameworks like L<Catalyst> (See L<Catalyst::Plugin::Authorization::Roles>
 for the role-based implementation and L<Catalyst::Plugin::Authorization::Abilities>
 for the ability-based implementation that inspired this module).
 
-As opposed to the role-based access control - where users are allowed access
+As opposed to role-based access control - where users are allowed access
 to a certain feature (here called 'action') only through their association
-to a certain role that is hard-coded in the program's code - in ability-based
+to a certain role that is hard-coded into the program - in ability-based
 acccess control, a list of actions is assigned to every user, and they are
 only allowed to perform these actions. Actions are not assigned by the
 developer during development, but rather by the end-user during deployment.
@@ -62,8 +65,8 @@ via roles the user can assume (as in role-based access control). For example,
 if user 'user01' is a member of role 'admin', and this user wishes to perform
 some action, for example 'delete_foo', then they will only be able to do
 so if the 'delete_foo' ability was given to either the user itself or the
-'admin' role itself. Furthermore, roles can be assigned other roles; for
-example, roles 'mods' and 'editors' can be assigned _inside_ role 'mega_mods'.
+'admin' role itself. Furthermore, roles can recursively inherit other roles;
+for example, the role 'mega_mods' can inherit the roles 'mods' and 'editors'.
 Users of the 'mega_mods' role will assume all actions owned by the 'mods'
 and 'editors' roles.
 
@@ -73,25 +76,49 @@ and associate users with the roles (more commonly called 'user groups');
 for example, the admin can create an 'editor' role, giving users of this
 role the ability to edit and delete posts, but not any other administrative
 action. So in essence, this type of access control relieves the developer
-from deciding who gets to do what and passes these decisions to the
-end-user, which might be necessary in certain situations.
+of deciding who gets to do what and passes these decisions to the
+end-user, which might actually be necessary in certain situations.
 
-The Abilities module is implemented as a L<Moose role|Moose::Role>. In order
-to be able to use this mechanism, web applications must implement a user
-management system that will consume this role. More specifically, a user
-class and a role class must be implemented, consuming this role. L<Entities>
-is a reference implementation that can be used by web applications, or
-just as an example of an ability-based authorization system. L<Entities::User>
+The C<Abilities> module is implemented as a L<Moose role|Moose::Role> (but
+uses L<Any::Moose>). In order to be able to use this mechanism, applications
+must implement a user management system that will consume this role.
+More specifically, a user class and a role class must be implemented, consuming this role. L<Entities>
+is a reference implementation that can be used by applications, or
+just taken as an example of an ability-based authorization system. L<Entities::User>
 and L<Entities::Role> are the user and role classes that consume the Abilities
 role in the Entities distribution.
 
-=head2 PAID, SUBSCRIPTION-BASED WEB SERVICES
+=head2 CONSTRAINTS
+
+Generally, an ability is a yes/no option. Either the user can or can't perform
+a specific action. At times, this might not be flexible enough, and the user's
+ability to perform a certain action should be constrained. For example, a user
+might be granted the ability to edit posts in a blog, but this ability should
+be constrained to the user's posts only. The user is not to be allowed to edit
+posts created by other users. C<Abilities> supports constraints by allowing to
+set a name-based constraint when granting a user/role a certain ability. Then,
+checking the user's ability to perform an action can include the constraint,
+for example:
+
+	if ($post->{user_id} eq $user->id && $user->can_perform('edit_posts', 'only_his')) {
+		# allow
+	} else {
+		# do not allow
+	}
+
+Here, the C<Abilities> module allows you to check if the user's ability is constrained,
+but the responsibility for making sure the constraint is actually relevant
+to the case is left to you. In the above example, it is the application that
+checks if the post the user is trying to edit was created by them, not the C<Abilities>
+module.
+
+=head2 (PAID) SUBSCRIPTION-BASED WEB SERVICES
 
 Apart from the scenario described above, this module also provides optional
 support for subscription-based web services, such as those where customers
 subscribe to a certain paid (or free, doesn't matter) plan from a list
 of available plans (GitHub is an example of such a service). This functionality
-is also implemented as a role, in the L<Abilities::Features> module provided
+is also implemented as a Moose role, in the L<Abilities::Features> module provided
 with this distribution. Read its documentation for detailed information.
 
 =head1 REQUIRED METHODS
@@ -101,9 +128,16 @@ methods:
 
 =head2 roles()
 
-Returns a list of all roles that a user object belongs to, or a role object
-inherits from. The list must contain references to the role objects, not
-just their names.
+Returns a list of all role names that a user object belongs to, or a role object
+inherits from.
+
+Example return structure:
+
+	( 'moderator', 'supporter' ]
+
+NOTE: In previous versions, this method was required to return
+an array of role objects, not a list of role names. This has been changed
+in version 0.3.
 
 =cut
 
@@ -111,9 +145,18 @@ requires 'roles';
 
 =head2 actions()
 
-Returns a list of all actions that a user object has been explicitely granted,
-or that a role object has been granted. The list must contain references
-to the action objects, not just their names.
+Returns a list of all action names that a user object has been explicitely granted,
+or that a role object has been granted. If a certain action is constrained, then
+it should be added to the list as an array reference with two items, the first being
+the name of the action, the second being the name of the constraint.
+
+Example return structure:
+
+	( 'create_posts', ['edit_posts', 'only_his'], 'comment_on_posts' )
+
+NOTE: In previous versions, this method was required to return
+an array of action objects, not a list of action names. This has been changed
+in version 0.3.
 
 =cut
 
@@ -129,172 +172,170 @@ will be able to perform any action, even if it wasn't granted to them.
 
 requires 'is_super';
 
+=head1 PROVIDED ATTRIBUTES
+
+=head2 abilities
+
+Holds a hash reference of all the abilities a user/role object can
+perform, after consolidating abilities inherited from roles (including
+recursively) and directly granted. Keys in the hash-ref will be names
+of actions, values will be 1 (for yes/no actions) or a single-item array-ref
+with the name of a constraint (for constrained actions).
+
+=cut
+
+has 'abilities' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+
 =head1 PROVIDED METHODS
 
 Classes that consume this role will have the following methods available
 for them:
 
-=head2 can_perform( $action_name | @action_names )
+=head2 can_perform( $action, [ $constraint ] )
 
-Receives the name of an action (or names of actions), and returns a true
-value if the user/role can perform the provided action(s). If more than
-one actions are passed, a true value will be returned only if the user/role
-can perform ALL of these actions.
+Receives the name of an action, and possibly a constraint, and returns a true
+value if the user/role can perform the provided action.
 
 =cut
 
 sub can_perform {
-	my $self = shift;
+	my ($self, $action, $constraint) = @_;
 
 	# a super-user/super-role can do whatever they want
 	return 1 if $self->is_super;
 
-	ACTION: foreach (@_) {
-		# Check specific user abilities
-		foreach my $act ($self->actions) {
-			next ACTION if $act->name eq $_; # great, we can do that
-		}
-		# Check user abilities via roles
-		foreach my $role ($self->roles) {
-			next ACTION if $role->can_perform($_); # great, we can do that
-		}
-		
-		# if we've reached this spot, the user/role cannot perform
-		# this action, so return a false value
-		return;
-	}
+	# return false if user/role doesn't have that ability
+	return unless $self->abilities->{$action};
 
-	# if we've reached this spot, the user/role can perform all of
-	# the requested actions, so return true
-	return 1;
+	# user/role has ability, but is there a constraint?
+	if ($constraint && $constraint ne '_all_') {
+		# return true if user/role's ability is not constrained
+		return 1 if !ref $self->abilities->{$action};
+		
+		# it is constrained (or at least it should be, let's make
+		# sure we have an array-ref of constraints)
+		if (ref $self->abilities->{$action} eq 'ARRAY') {
+			return 1 if $constraint eq '_any_';	# caller wants to know if
+								# user/role has any constraint,
+								# which we now know is true
+			foreach (@{$self->abilities->{$action}}) {
+				return 1 if $_ eq $constraint;
+			}
+			return; # constraint not met
+		} else {
+			carp "Expected an array-ref of constraints for action $action, received ".ref($self->abilities->{$action}).", returning false.";
+			return;
+		}
+	} else {
+		# no constraint, make sure user/role's ability is indeed
+		# not constrained
+		return if ref $self->abilities->{$action}; # implied: ref == 'ARRAY', thus constrained
+		return 1; # not constrained
+	}
 }
 
-=head2 belongs_to( $role_name | @role_names )
+=head2 assigned_role( $role_name )
 
-=head2 takes_from( $role_name | @role_names )
+This method receives a role name and returns a true value if the user/role
+is a direct member of the provided role. Only direct membership is checked,
+so the user/role must be specifically assigned to the provided role, and
+not to a role that inherits from that role (see L</"inherits_from_role( $role )">
+instead).
 
-The above two methods are actually the same. The names are meant to differentiate
-between user objects (first case) and role objects (second case).
+=head2 takes_from( $role_name )
 
-These methods receive a role name (or names). In case of a user object,
-the method will return a true value if the user is a direct member of the
-provided role. In case multiple role names were provided, a true value will
-be returned only if the user is a member of ALL of these roles. Only direct
-association is checked, so the user must be specifically assigned to the
-provided role, and not to a role that inherits from that role (see C<inherits_from_role()>
-instead.
+=head2 belongs_to( $role_name )
 
-In case of a role object, this method will return a true value if the role
-directly consumes the abilities of the provided role. In case multiple role
-names were provided, a true value will be returned only if the role directly
-consumes ALL of these roles. Like in case of a user, only direct association
-is checked, so inheritance doesn't count.
+The above two methods are the same as C<assigned_role()>. Since version
+0.3 they are deprecated, and using them will issue a deprecation warning.
+They will be removed in future versions.
 
 =cut
 
-sub belongs_to {
-	my $self = shift;
+sub assigned_role {
+	my ($self, $role) = @_;
 
-	ROLE: foreach (@_) {
-		foreach my $role ($self->roles) {
-			next ROLE if $role->name eq $_; # great, the user/role belongs to this role
-		}
-		
-		# if we've reached this spot, the user/role does not belong to
-		# the role, so return a false value
-		return;
+	return unless $role;
+
+	foreach ($self->roles) {
+		return 1 if $_->name eq $role;
 	}
 
-	# if we've reached this spot, the user belongs to the rule,
-	# so return true.
-	return 1;
+	return;
 }
 
 sub takes_from {
-	shift->belongs_to(@_);
+	carp __PACKAGE__.'::takes_from() is deprecated, please use assigned_role() instead.';
+	return shift->assigned_role(@_);
 }
 
-=head2 inherits_from_role( $role_name | @role_names )
+sub belongs_to {
+	carp __PACKAGE__.'::belongs_to() is deprecated, please use assigned_role() instead.';
+	return shift->assigned_role(@_);
+}
 
-Receives the name of a role (or names of roles), and returns a true value
-if the user/role inherits the abilities of the provided role. If more than
-one roles are passed, a true value will be returned only if the user/role
-inherits from ALL of these roles.
+=head2 does_role( $role_name )
 
-This method takes inheritance into account, so if a user was directly assigned
-to the 'admins' role, and the 'admins' role inherits from the 'devs' role,
-then inherits_from_role('devs') will return true for that user.
+Receives the name of a role, and returns a true value if the user/role
+inherits the abilities of the provided role. This method takes inheritance
+into account, so if a user was directly assigned to the 'admins' role,
+and the 'admins' role inherits from the 'devs' role, then C<does_role('devs')>
+will return true for that user (while C<assigned_role('devs')> returns false).
+
+=head2 inherits_from_role( $role_name )
+
+This method is exactly the same as C<does_role()>. Since version 0.3 it
+is deprecated and using it issues a deprecation warning. It will be removed
+in future versions.
 
 =cut
+
+sub does_role {
+	my ($self, $role) = @_;
+
+	return unless $role;
+
+	foreach ($self->roles) {
+		return 1 if $_->name eq $role || $_->does_role($role);
+	}
+
+	return;
+}
 
 sub inherits_from_role {
+	carp __PACKAGE__.'::inherits_from_role() is deprecated, please use does_role() instead.';
+	return shift->does_role(@_);
+}
+
+###### INTERNAL METHODS #######
+
+sub _build_abilities {
 	my $self = shift;
 
-	ROLE: foreach (@_) {
-		foreach my $role ($self->roles) {
-			next ROLE if $role->name eq $_; # great, we inherit this
-			next ROLE if $role->inherits_from_role($_); # great, we inherit this
+	my $abilities = {};
+
+	# load direct actions granted to this user/role
+	foreach ($self->actions) {
+		# is this action constrained/scoped?
+		unless (ref $_) {
+			$abilities->{$_} = 1;
+		} elsif (ref $_ eq 'ARRAY' && scalar @$_ == 2) {
+			$abilities->{$_->[0]} = [$_->[1]];
+		} else {
+			carp "Can't handle action of reference ".ref($_);
 		}
-		
-		# if we'e reached this spot, we do not inherit this role
-		# so return false
-		return;
-	}
-	
-	# if we've reached this spot, we inherit all the supplied roles,
-	# so return a true value
-	return 1;
-}
-
-=head2 all_abilities()
-
-Returns a list of all actions that a user/role can perform, either due to
-direct association or due to inheritance.
-
-=cut
-
-sub all_abilities {
-	keys %{$_[0]->_all_abilities()};
-}
-
-=head1 INTERNAL METHODS
-
-These methods are only to be used internally.
-
-=head2 _all_abilities()
-
-=cut
-
-sub _all_abilities {
-	my $self = shift;
-
-	my $actions = {};
-	foreach my $act ($self->actions) {
-		$actions->{$act->name} = 1;
-	}
-	foreach my $role ($self->roles) {
-		my $role_acts = $role->_all_abilities;
-		map { $actions->{$_} = $role_acts->{$_} } keys %$role_acts;
 	}
 
-	return $actions;
+	# load actions from roles this user/role consumes
+	my @hashes = map { $_->abilities } $self->roles;
+
+	# merge all abilities
+	while (scalar @hashes) {
+		$abilities = merge($abilities, shift @hashes);
+	}
+
+	return $abilities;
 }
-
-=head1 TODO
-
-=over
-
-=item * Create tests
-
-Create tests for these roles. Right now the only way this is actually
-tested is through the L<Entities> distribution tests.
-
-=item * Catalyst::Plugin::Authorization::Abilities
-
-Find a way to make L<Catalyst::Plugin::Authorization::Abilities> use
-this role.
-
-=back
 
 =head1 AUTHOR
 
@@ -303,14 +344,14 @@ Ido Perlmuter, C<< <ido at ido50 dot net> >>
 =head1 BUGS
 
 Please report any bugs or feature requests to C<bug-abilities at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Abilities>.  I will be notified, and then you'll
+the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Abilities>. I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
 =head1 SUPPORT
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Abilities
+	perldoc Abilities
 
 You can also look for information at:
 
@@ -336,7 +377,7 @@ L<http://search.cpan.org/dist/Abilities/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010 Ido Perlmuter.
+Copyright 2010-2012 Ido Perlmuter.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

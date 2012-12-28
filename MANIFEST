@@ -1,4 +1,5 @@
 Changes
+INSTALL
 LICENSE
 MANIFEST
 MANIFEST.SKIP
@@ -6,11 +7,17 @@ META.json
 META.yml
 Makefile.PL
 README
+SIGNATURE
 dist.ini
 lib/Abilities.pm
 lib/Abilities/Features.pm
-lib/Abilities/Scoped.pm
 t/00-load.t
+t/01-abilities.t
+t/02-features.t
+t/lib/TestCustomer.pm
+t/lib/TestPlan.pm
+t/lib/TestRole.pm
+t/lib/TestUser.pm
 t/release-dist-manifest.t
 t/release-pod-coverage.t
 t/release-pod-syntax.t

@@ -2,32 +2,34 @@
 use strict;
 use warnings;
 
-BEGIN { require 5.004; }
+use 5.006;
 
-use ExtUtils::MakeMaker 6.31;
+use ExtUtils::MakeMaker 6.30;
 
 
 
 my %WriteMakefileArgs = (
-  'ABSTRACT' => 'Simple, hierarchical user authorization for web applications, with optional support for plan-based paid services.',
-  'AUTHOR' => 'Ido Perlmuter <ido@ido50.net>',
-  'BUILD_REQUIRES' => {
-    'Test::More' => '0'
+  "ABSTRACT" => "Simple, hierarchical user authorization for web applications, with optional support for plan-based (paid) services.",
+  "AUTHOR" => "Ido Perlmuter <ido\@ido50.net>",
+  "BUILD_REQUIRES" => {
+    "Test::More" => 0
   },
-  'CONFIGURE_REQUIRES' => {
-    'ExtUtils::MakeMaker' => '6.31'
+  "CONFIGURE_REQUIRES" => {
+    "ExtUtils::MakeMaker" => "6.30"
   },
-  'DISTNAME' => 'Abilities',
-  'EXE_FILES' => [],
-  'LICENSE' => 'perl',
-  'NAME' => 'Abilities',
-  'PREREQ_PM' => {
-    'Moose::Role' => '0',
-    'namespace::autoclean' => '0'
+  "DISTNAME" => "Abilities",
+  "EXE_FILES" => [],
+  "LICENSE" => "perl",
+  "NAME" => "Abilities",
+  "PREREQ_PM" => {
+    "Any::Moose" => 0,
+    "Carp" => 0,
+    "Hash::Merge" => 0,
+    "namespace::autoclean" => 0
   },
-  'VERSION' => '0.2',
-  'test' => {
-    'TESTS' => 't/*.t'
+  "VERSION" => "0.3",
+  "test" => {
+    "TESTS" => "t/*.t"
   }
 );
 

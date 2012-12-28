@@ -1,0 +1,45 @@
+This file contains message digests of all files listed in MANIFEST,
+signed via the Module::Signature module, version 0.69.
+
+To verify the content in this distribution, first make sure you have
+Module::Signature installed, then type:
+
+    % cpansign -v
+
+It will check each file's integrity, as well as the signature's
+validity.  If "==> Signature verified OK! <==" is not displayed,
+the distribution may already have been compromised, and you should
+not run its Makefile.PL or Build.PL.
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+SHA1 2cfe12744deabb870e375883b79ff288e7108ed9 Changes
+SHA1 8a4e7bc3043c5a9175c585c46dfd21c2628b1d3d INSTALL
+SHA1 d38085d38a0d811f563a79af5ca3594c53b9d948 LICENSE
+SHA1 58fee384b5405bc71ad5f6574adfb8dcbe4af7d9 MANIFEST
+SHA1 beff4a17e62d38f89f42f7d4bd8eea65bd3eed43 MANIFEST.SKIP
+SHA1 1e662a026dfab0551f95c0bacfd2398a12b0a00f META.json
+SHA1 ce5d32a7ec141130b2c45fca51f53e6c62c2e937 META.yml
+SHA1 3e5ddbbc10d1bd99172808f26178d0e150ec6a98 Makefile.PL
+SHA1 649f9f873ca8fb5cd29f973e35117f926f17e599 README
+SHA1 92f96a5defd798a8643ad925dd3b86f10e2836c2 dist.ini
+SHA1 ba4d70856b06d7189a7a64223b209ec890db8410 lib/Abilities.pm
+SHA1 c5440773b46f65298d26fe5877845cea77a7cbf3 lib/Abilities/Features.pm
+SHA1 b968ed1c0d3c90f8bc8d8ad970aa3e6de5fbc150 t/00-load.t
+SHA1 aa182e81321431179e1100a7f19484620b6324b6 t/01-abilities.t
+SHA1 3b5f43f430fcb61f39cb6b9331a222622a648b2f t/02-features.t
+SHA1 d382535320b53afe53e28976a09c2250cc7bc82b t/lib/TestCustomer.pm
+SHA1 a0ca68e20c7d69ac913360af4427eac4c7117c1f t/lib/TestPlan.pm
+SHA1 a126d06c1cd9fa4d168cf700448e556893018b8b t/lib/TestRole.pm
+SHA1 1e5882138c356c8044702e63e12949e08d95e186 t/lib/TestUser.pm
+SHA1 87768d177f8c2e2df9c591cde869e7c8a245555e t/release-dist-manifest.t
+SHA1 9433c240fe590bc404ab68ff63984df763e347ed t/release-pod-coverage.t
+SHA1 b30cbdfaf935017c4568c0c91b242438cb87786e t/release-pod-syntax.t
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iF4EAREIAAYFAlDdt4MACgkQa4OHQAFM10dWJAD/U4bmfrIUvKiehP7gDwDd/vMy
+qLm8/z1Csz5TAPCTjL8BAJCqgfwAJ/phtXT8zt+rfC1avADcniOi2MDO6iRAGyco
+=dBtf
+-----END PGP SIGNATURE-----
