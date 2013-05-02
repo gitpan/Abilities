@@ -1,15 +1,15 @@
 package Abilities::Features;
 
-use Any::Moose 'Role';
+# ABSTRACT: Extends Abilities with plan management for subscription-based web services.
+
+use Moo::Role;
 use namespace::autoclean;
 
 use Carp;
 use Hash::Merge qw/merge/;
 
-our $VERSION = "0.3";
+our $VERSION = "0.4";
 $VERSION = eval $VERSION;
-
-# ABSTRACT: Extends Abilities with plan management for subscription-based web services.
 
 =head1 NAME
 
@@ -17,13 +17,13 @@ Abilities::Features - Extends Abilities with plan management for subscription-ba
 
 =head1 VERSION
 
-version 0.3
+version 0.4
 
 =head1 SYNOPSIS
 
 	package Customer;
 	
-	use Moose;
+	use Moose; # or Moo
 	with 'Abilities::Features';
 	
 	# ... define required methods ...
@@ -42,7 +42,7 @@ version 0.3
 
 =head1 DESCRIPTION
 
-This L<Moose role|Moose::Role> extends the ability-based authorization
+This L<Moo role|Moo::Role> extends the ability-based authorization
 system defined by the L<Abilities> module with customer and plan management
 for subscription-based web services. This includes paid services, where
 customers subscribe to a plan from a list of available plans, each plan
@@ -120,7 +120,10 @@ Keys of this hash-ref will be the names of the features, values will either be
 
 =cut
 
-has 'available_features' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+has 'available_features' => (
+	is => 'lazy',
+	isa => sub { die "abilities must be a hash-ref" unless ref $_[0] eq 'HASH' },
+);
 
 =head1 METHODS
 
@@ -186,14 +189,14 @@ sub in_plan {
 	return;
 }
 
-=head2 inherits_plan( $role_name )
+=head2 inherits_plan( $plan_name )
 
 Returns a true value if the customer/plan inherits the features of
 the provided plan(s). If a customer belongs to the 'premium' plan, and
 the 'premium' plan inherits from the 'basic' plan, then C<inherits_plan('basic')>
 will be true for that customer, while C<in_plan('basic')> will be false.
 
-=head2 inherits_from_plan( $role_name )
+=head2 inherits_from_plan( $plan_name )
 
 This method is exactly the same as C<inherits_plan()>. Since version 0.3
 it is deprecated, and using it issues a deprecation warning. It will be
@@ -288,7 +291,7 @@ L<http://search.cpan.org/dist/Abilities/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2012 Ido Perlmuter.
+Copyright 2010-2013 Ido Perlmuter.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

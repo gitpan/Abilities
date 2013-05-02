@@ -12,6 +12,7 @@ my %WriteMakefileArgs = (
   "ABSTRACT" => "Simple, hierarchical user authorization for web applications, with optional support for plan-based (paid) services.",
   "AUTHOR" => "Ido Perlmuter <ido\@ido50.net>",
   "BUILD_REQUIRES" => {
+    "Moo" => 0,
     "Test::More" => 0
   },
   "CONFIGURE_REQUIRES" => {
@@ -22,12 +23,13 @@ my %WriteMakefileArgs = (
   "LICENSE" => "perl",
   "NAME" => "Abilities",
   "PREREQ_PM" => {
-    "Any::Moose" => 0,
     "Carp" => 0,
     "Hash::Merge" => 0,
+    "Moo::Role" => 0,
+    "Scalar::Util" => 0,
     "namespace::autoclean" => 0
   },
-  "VERSION" => "0.3",
+  "VERSION" => "0.4",
   "test" => {
     "TESTS" => "t/*.t"
   }

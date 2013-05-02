@@ -1,15 +1,16 @@
 package Abilities;
 
-use Any::Moose 'Role';
+# ABSTRACT: Simple, hierarchical user authorization for web applications, with optional support for plan-based (paid) services.
+
+use Moo::Role;
 use namespace::autoclean;
 
 use Carp;
 use Hash::Merge qw/merge/;
+use Scalar::Util qw/blessed/;
 
-our $VERSION = "0.3";
+our $VERSION = "0.4";
 $VERSION = eval $VERSION;
-
-# ABSTRACT: Simple, hierarchical user authorization for web applications, with optional support for plan-based (paid) services.
 
 =head1 NAME
 
@@ -17,13 +18,13 @@ Abilities - Simple, hierarchical user authorization for web applications, with o
 
 =head1 VERSION
 
-version 0.3
+version 0.4
 
 =head1 SYNOPSIS
 
 	package User;
 	
-	use Moose;
+	use Moose; # or Moo
 	with 'Abilities';
 	
 	# ... define required methods ...
@@ -79,11 +80,10 @@ action. So in essence, this type of access control relieves the developer
 of deciding who gets to do what and passes these decisions to the
 end-user, which might actually be necessary in certain situations.
 
-The C<Abilities> module is implemented as a L<Moose role|Moose::Role> (but
-uses L<Any::Moose>). In order to be able to use this mechanism, applications
-must implement a user management system that will consume this role.
-More specifically, a user class and a role class must be implemented, consuming this role. L<Entities>
-is a reference implementation that can be used by applications, or
+The C<Abilities> module is implemented as a L<Moo role|Moo::Role> (which makes
+it compatible with L<Moose> code). In order to be able to use this mechanism,
+applications must implement a user management system that will consume this role.
+More specifically, a user class and a role class must be implemented, consuming this role. L<Entities> is a reference implementation that can be used by applications, or
 just taken as an example of an ability-based authorization system. L<Entities::User>
 and L<Entities::Role> are the user and role classes that consume the Abilities
 role in the Entities distribution.
@@ -118,7 +118,7 @@ Apart from the scenario described above, this module also provides optional
 support for subscription-based web services, such as those where customers
 subscribe to a certain paid (or free, doesn't matter) plan from a list
 of available plans (GitHub is an example of such a service). This functionality
-is also implemented as a Moose role, in the L<Abilities::Features> module provided
+is also implemented as a Moo(se) role, in the L<Abilities::Features> module provided
 with this distribution. Read its documentation for detailed information.
 
 =head1 REQUIRED METHODS
@@ -133,7 +133,7 @@ inherits from.
 
 Example return structure:
 
-	( 'moderator', 'supporter' ]
+	( 'moderator', 'supporter' )
 
 NOTE: In previous versions, this method was required to return
 an array of role objects, not a list of role names. This has been changed
@@ -184,7 +184,10 @@ with the name of a constraint (for constrained actions).
 
 =cut
 
-has 'abilities' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+has 'abilities' => (
+	is => 'lazy',
+	isa => sub { die "abilities must be a hash-ref" unless ref $_[0] eq 'HASH' },
+);
 
 =head1 PROVIDED METHODS
 
@@ -327,7 +330,7 @@ sub _build_abilities {
 	}
 
 	# load actions from roles this user/role consumes
-	my @hashes = map { $_->abilities } $self->roles;
+	my @hashes = map { blessed $_ ? $_->abilities : () } $self->roles;
 
 	# merge all abilities
 	while (scalar @hashes) {
@@ -377,7 +380,7 @@ L<http://search.cpan.org/dist/Abilities/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2012 Ido Perlmuter.
+Copyright 2010-2013 Ido Perlmuter.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

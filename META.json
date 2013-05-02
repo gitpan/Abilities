@@ -4,7 +4,7 @@
       "Ido Perlmuter <ido@ido50.net>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300028, CPAN::Meta::Converter version 2.120921",
+   "generated_by" : "Dist::Zilla version 4.300031, CPAN::Meta::Converter version 2.120921",
    "license" : [
       "perl_5"
    ],
@@ -28,15 +28,17 @@
       },
       "runtime" : {
          "requires" : {
-            "Any::Moose" : "0",
             "Carp" : "0",
             "Hash::Merge" : "0",
+            "Moo::Role" : "0",
+            "Scalar::Util" : "0",
             "namespace::autoclean" : "0",
             "perl" : "5.006"
          }
       },
       "test" : {
          "requires" : {
+            "Moo" : "0",
             "Test::More" : "0"
          }
       }
@@ -50,6 +52,6 @@
          "web" : "https://github.com/ido50/Abilities"
       }
    },
-   "version" : "0.3"
+   "version" : "0.4"
 }
 
