@@ -5,6 +5,8 @@ author:
 build_requires:
   Moo: 0
   Test::More: 0
+  strict: 0
+  warnings: 0
 configure_requires:
   ExtUtils::MakeMaker: 6.30
 dynamic_config: 0
@@ -18,10 +20,9 @@ requires:
   Carp: 0
   Hash::Merge: 0
   Moo::Role: 0
-  Scalar::Util: 0
   namespace::autoclean: 0
   perl: 5.006
 resources:
   homepage: https://github.com/ido50/Abilities
   repository: https://github.com/ido50/Abilities.git
-version: 0.4
+version: 0.5

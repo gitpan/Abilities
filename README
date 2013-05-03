@@ -3,7 +3,7 @@ NAME
     applications, with optional support for plan-based (paid) services.
 
 VERSION
-    version 0.4
+    version 0.5
 
 SYNOPSIS
             package User;
@@ -17,7 +17,7 @@ SYNOPSIS
 
             # get a user object that consumed the Abilities role
             my $user = MyApp->get_user('username'); # $user is a User object
-                
+
             # check if the user is able to do something
             if ($user->can_perform('something')) {
                     do_something();
@@ -145,17 +145,12 @@ REQUIRED METHODS
     If a user/role object has a true value for this attribute, then they
     will be able to perform any action, even if it wasn't granted to them.
 
-PROVIDED ATTRIBUTES
-  abilities
-    Holds a hash reference of all the abilities a user/role object can
-    perform, after consolidating abilities inherited from roles (including
-    recursively) and directly granted. Keys in the hash-ref will be names of
-    actions, values will be 1 (for yes/no actions) or a single-item
-    array-ref with the name of a constraint (for constrained actions).
+  get_role( $name )
+    This is a method that returns the object of the role named $name.
 
 PROVIDED METHODS
     Classes that consume this role will have the following methods available
-    for them:
+    to them:
 
   can_perform( $action, [ $constraint ] )
     Receives the name of an action, and possibly a constraint, and returns a
@@ -166,13 +161,7 @@ PROVIDED METHODS
     user/role is a direct member of the provided role. Only direct
     membership is checked, so the user/role must be specifically assigned to
     the provided role, and not to a role that inherits from that role (see
-    "inherits_from_role( $role )" instead).
-
-  takes_from( $role_name )
-  belongs_to( $role_name )
-    The above two methods are the same as "assigned_role()". Since version
-    0.3 they are deprecated, and using them will issue a deprecation
-    warning. They will be removed in future versions.
+    "does_role( $role )" instead).
 
   does_role( $role_name )
     Receives the name of a role, and returns a true value if the user/role
@@ -182,10 +171,39 @@ PROVIDED METHODS
     "does_role('devs')" will return true for that user (while
     "assigned_role('devs')" returns false).
 
-  inherits_from_role( $role_name )
-    This method is exactly the same as "does_role()". Since version 0.3 it
-    is deprecated and using it issues a deprecation warning. It will be
-    removed in future versions.
+  abilities()
+    Returns a hash reference of all the abilities a user/role object can
+    perform, after consolidating abilities inherited from roles (including
+    recursively) and directly granted. Keys in the hash-ref will be names of
+    actions, values will be 1 (for yes/no actions) or a single-item
+    array-ref with the name of a constraint (for constrained actions).
+
+UPGRADING FROM v0.2
+    Up to version 0.2, "Abilities" required the "roles" and "actions"
+    attributes to return objects. While this made it easier to calculate
+    abilities, it made this system a bit less flexible.
+
+    In version 0.3, "Abilities" changed the requirement such that both these
+    attributes need to return strings (the names of the roles/actions). If
+    your implementation has granted roles and actions stored in a database
+    by names, this made life a bit easier for you. On other implementations,
+    however, this has the potential of requiring you to write a bit more
+    code. If that is the case, I apologize, but keep in mind that you can
+    still store granted roles and actions any way you want in a database
+    (either by names or by references), just as long as you correctly
+    provide "roles" and "actions".
+
+    Unfortunately, in both versions 0.3 and 0.4, I made a bit of a mess that
+    rendered both versions unusable. While I documented the "roles"
+    attribute as requiring role names instead of role objects, the actual
+    implementation still required role objects. This has now been fixed, but
+    it also meant I had to add a new requirement: consuming classes now have
+    to provide a method called "get_role()" that takes the name of a role
+    and returns its object. This will probably means loading the role from a
+    database and blessing it into your role class that also consumes this
+    module.
+
+    I apologize for any inconvenience this might have caused.
 
 AUTHOR
     Ido Perlmuter, "<ido at ido50 dot net>"

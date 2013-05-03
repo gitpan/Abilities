@@ -31,7 +31,6 @@
             "Carp" : "0",
             "Hash::Merge" : "0",
             "Moo::Role" : "0",
-            "Scalar::Util" : "0",
             "namespace::autoclean" : "0",
             "perl" : "5.006"
          }
@@ -39,7 +38,9 @@
       "test" : {
          "requires" : {
             "Moo" : "0",
-            "Test::More" : "0"
+            "Test::More" : "0",
+            "strict" : "0",
+            "warnings" : "0"
          }
       }
    },
@@ -52,6 +53,6 @@
          "web" : "https://github.com/ido50/Abilities"
       }
    },
-   "version" : "0.4"
+   "version" : "0.5"
 }
 

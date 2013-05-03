@@ -15,6 +15,7 @@ t/00-load.t
 t/01-abilities.t
 t/02-features.t
 t/lib/TestCustomer.pm
+t/lib/TestManager.pm
 t/lib/TestPlan.pm
 t/lib/TestRole.pm
 t/lib/TestUser.pm

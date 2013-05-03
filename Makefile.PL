@@ -13,7 +13,9 @@ my %WriteMakefileArgs = (
   "AUTHOR" => "Ido Perlmuter <ido\@ido50.net>",
   "BUILD_REQUIRES" => {
     "Moo" => 0,
-    "Test::More" => 0
+    "Test::More" => 0,
+    "strict" => 0,
+    "warnings" => 0
   },
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => "6.30"
@@ -26,10 +28,9 @@ my %WriteMakefileArgs = (
     "Carp" => 0,
     "Hash::Merge" => 0,
     "Moo::Role" => 0,
-    "Scalar::Util" => 0,
     "namespace::autoclean" => 0
   },
-  "VERSION" => "0.4",
+  "VERSION" => "0.5",
   "test" => {
     "TESTS" => "t/*.t"
   }
